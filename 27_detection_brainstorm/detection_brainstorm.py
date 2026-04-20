@@ -1,34 +1,45 @@
-print("=== Detection Brainstorm System ===")
+import cv2
 
-print("\nChoose Detection Application:")
-print("1. Face Unlock")
-print("2. Security Surveillance")
-print("3. Self-Driving Cars")
-print("4. Attendance System")
-print("5. Medical Analysis")
+# Load face detection model
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 
+                                     'haarcascade_frontalface_default.xml')
 
-choice = input("\nEnter your choice (1-5): ")
+# Start webcam
+cap = cv2.VideoCapture(0)
 
-print("\n--- Result ---")
+print("Press 'q' to exit")
 
-if choice == "1":
-    print("Face Unlock: Detects face to unlock mobile securely.")
-elif choice == "2":
-    print("Security Surveillance: Detects suspicious activity using cameras.")
-elif choice == "3":
-    print("Self-Driving Cars: Detects vehicles, people, and traffic signals.")
-elif choice == "4":
-    print("Attendance System: Uses face detection to mark attendance.")
-elif choice == "5":
-    print("Medical Analysis: Detects diseases from medical images.")
-else:
-    print("Invalid choice")
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
 
-print("\n--- Smart System Design ---")
+    # Grayscale
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-print("System: Face Recognition Attendance")
-print("Steps:")
-print("1. Capture image")
-print("2. Detect face")
-print("3. Match with database")
-print("4. Mark attendance automatically")
+    # Blur
+    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+
+    # Edge Detection
+    edges = cv2.Canny(blur, 50, 150)
+
+    # Face Detection
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+    for (x, y, w, h) in faces:
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        cv2.putText(frame, "Face", (x, y-10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
+
+    # Show outputs
+    cv2.imshow("Original", frame)
+    cv2.imshow("Grayscale", gray)
+    cv2.imshow("Blur", blur)
+    cv2.imshow("Edge Detection", edges)
+
+    # Exit
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
